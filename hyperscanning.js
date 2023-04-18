@@ -84,14 +84,20 @@ const connectMuse = async () => {
       const fftData = fft(window2);
       const freqs = fftFreq(fftData, 256);
       
-      // Calculate cross-correlation and send via WebSocket
-      if (eegData1.length > 0) {
-        window1 = eegData1.slice(-windowSize);
-        const crossCorr = calculateCrossCorrelation(window1, window2);
-        const message = { type: 'cross-correlation', data: crossCorr };
-        wss.clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(message));
-          }
-        });
-      }
+ // Calculate cross-correlation and send via WebSocket
+ if (eegData1.length > 0 && eegData2.length > 0) {
+  const window1 = eegData1.slice(-windowSize);
+  const window2 = eegData2.slice(-windowSize);
+  const crossCorr1 = calculateCrossCorrelation(window1, window2);
+  const crossCorr2 = calculateCrossCorrelation(window2, window1);
+
+  const message1 = { type: 'cross-correlation', data: crossCorr1 };
+  const message2 = { type: 'cross-correlation', data: crossCorr2 };
+
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(message1));
+      client.send(JSON.stringify(message2));
+    }
+  });
+}
