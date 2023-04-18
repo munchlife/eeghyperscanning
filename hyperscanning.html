@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Hyperscanning EEG</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+  <div id="cross-correlation-plot"></div>
+
+  <script>
+    const ws = new WebSocket('ws://localhost:8080');
+
+    let timestamps = [];
+    let eegData1 = [];
+    let eegData2 = [];
+    let crossCorrelation = [];
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      timestamps.push(data.timestamp);
+      eegData1.push(data.eegData1);
+      eegData2.push(data.eegData2);
+      crossCorrelation.push(data.crossCorrelation);
+
+      // Update plot
+      Plotly.newPlot('cross-correlation-plot', [{
+        x: timestamps,
+        y: crossCorrelation,
+        type: 'scatter',
+        mode: 'lines'
+      }], {
+        title: 'Cross-Correlation'
+      });
+    };
+  </script>
+</body>
+</html>
